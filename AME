@@ -1,0 +1,49 @@
+mesh Th = square(100,1,[x,y/100]);
+fespace Vh(Th,P1);
+plot(Th,wait=1);
+Vh u,uu,T,uold,uold1,err;
+real k,c,rho,e,h,Tinf,t,dt,threshold,err1;
+int i,n,iplt0,maxIter,iter;
+int imax=2001;
+iplt0 = 100;
+maxIter = 1000;
+iter = 0;
+threshold = 0.000000001;
+k = 250;
+c = 2000;
+rho = 3000;
+u = 273+60;
+e = 100000000;
+h = 10;
+Tinf = 273.15+25;
+dt = 1;
+problem TH(u,uu)
+= int2d(Th)(u*uu+dt*k/(c*rho)*(dx(u)*dx(uu)+dy(u)*dy(uu)))
+-int2d(Th)(e/(c*rho)*T*uu)
+-int2d(Th)(uold*uu)
++on(2,u=273.15+100)
++int1d(Th,4)(h/(-k)*(Tinf)*uu)
++int1d(Th,4)(h/(-k)*(-u)*uu);
+for(n=1;n<imax;n++)
+{
+err1=1;
+iter=0;
+T=1/u;
+uold=u;
+t=t+dt;
+TH;
+}
+while(err1>threshold&&iter<maxIter)
+{
+uold1=u;
+T=1/u;
+TH;
+err=(u-uold1)/uold1;
+//plot(err,value=true,fill=true,wait=0);
+err1=abs(err[].max);
+iter=iter+1;
+cout<<"iter="<<iter<<endl;
+cout<<"error="<<err1<<endl;
+}
+plot(u,value=true,fill=true,wait=0);
+cout<<"time="<<t<<endl;
